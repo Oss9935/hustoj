@@ -25,10 +25,23 @@
     $ git clone https://github.com/zhblue/hustoj.git
     $ cd hustoj/trunk/install
 
-## 1.3  ubuntu 16.o4 install script download (우분투 16.04 설치 스크립트 다운)
+
+
+## 1.3 ubuntu 16.o4 install script download (우분투 16.04 설치 스크립트 다운)
+
+If install script already in your project, you don't need to install another one.
+
+해당 디렉토리에 이미 스크립트가 존재한다면 추가적으로 다운로드 받으실 필요가 없습니다.
 
     
     $ wget https://raw.githubusercontent.com/zhblue/hustoj/master/trunk/install/install-ubuntu16+.sh
+
+
+
+## 1.4 run install script (설치 스크립트 실행) 
+
+    
     $ sudo bash install-ubuntu16+.sh
+
 
 
