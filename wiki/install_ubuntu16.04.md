@@ -8,7 +8,7 @@
 
 * ubuntu version check (우분투 배포판 버전 확인)
 
-
+    
     $ lsb_release -a
 
     \No LSB modules are available.
@@ -21,16 +21,14 @@
 
 * project clone (프로젝트 클론)
 
-
+    
     $ git clone https://github.com/zhblue/hustoj.git
-
     $ cd hustoj/trunk/install
 
 * ubuntu 16.o4 install script download (우분투 16.04 설치 스크립트 다운)
 
-
+    
     $ wget https://raw.githubusercontent.com/zhblue/hustoj/master/trunk/install/install-ubuntu16+.sh
-
     $ sudo bash install-ubuntu16+.sh
 
 
