@@ -57,6 +57,11 @@ The warnging message which you met during installation will not influence to res
 
 Go on your webbrowser and type localhost in browser's address bar. And then you can see main page of hustoj.
 
+Above site view, You can see login button. 
+
+Just click it and then click again register button.  
+
+register admin account.
 
 ***
 
