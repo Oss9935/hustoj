@@ -3,6 +3,7 @@
     This show you how to install hustoj in ubuntu 16.04
     이 글은 우분투 16.04 버전에서 hustoj를 설치하는 과정을 설명하는 문서입니다.
 
+***
 
 # 1. Steps
 
@@ -57,6 +58,7 @@ The warnging message which you met during installation will not influence to res
 Go on your webbrowser and type localhost in browser's address bar. And then you can see main page of hustoj.
 
 
+***
 
 # 2. trouble shooting
 
