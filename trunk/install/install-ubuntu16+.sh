@@ -1,14 +1,25 @@
 #!/bin/bash
 apt-get update
 apt-get install -y subversion
+
+# uid 1536번으로 judge 계정 생성. 계정 추가 시 해당 계정의 home 디렉토리 추가
 /usr/sbin/useradd -m -u 1536 judge
 cd /home/judge/
 
+# svn checkout (co) — Check out a working copy from a repository.
+# /home/judeg/src에 클론받아옴.
 svn co https://github.com/zhblue/hustoj/trunk/trunk/  src
+
+
 apt-get install -y make flex g++ clang libmysqlclient-dev libmysql++-dev php-fpm nginx mysql-server php-mysql php-gd php-zip fp-compiler openjdk-8-jdk mono-devel php-mbstring php-xml
 
+# /etc/mysql/debian.cnf => debian-sys-maint
+# debian-sys-maint 사용자는 root와 동일한 권한을 갖는다.
+# 이 사용자는 보통  데비안 시스템의 특정 유지 보수 스크립트에서 사용됩니다.
 USER=`cat /etc/mysql/debian.cnf |grep user|head -1|awk  '{print $3}'`
 PASSWORD=`cat /etc/mysql/debian.cnf |grep password|head -1|awk  '{print $3}'`
+
+# cpu core 설정
 CPU=`grep "cpu cores" /proc/cpuinfo |head -1|awk '{print $4}'`
 
 mkdir etc data log
