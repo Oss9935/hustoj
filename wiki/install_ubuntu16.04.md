@@ -20,7 +20,7 @@
 
 
 
-## 1.2 project clone (프로젝트 클론)
+## 1.2 project clone (프로젝트 클론) // Optional
 
     
     $ git clone https://github.com/zhblue/hustoj.git
