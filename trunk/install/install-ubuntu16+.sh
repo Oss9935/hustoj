@@ -24,15 +24,21 @@ CPU=`grep "cpu cores" /proc/cpuinfo |head -1|awk '{print $4}'`
 
 mkdir etc data log
 
+# java.policy 파일은 노드의 JVM에서 실행하는 모든 Java 프로그램에 공유되는 글로벌 기본 정책을 의미한다.
+# java.io.FilePermission 설정관련 정책 업데이트
 cp src/install/java0.policy  /home/judge/etc
+
+# judge 서버 관련 정보 정의(OJ_HOST_NAME, OJ_USER_NAME, OJ_HTTP_BASEURL, ..._)
 cp src/install/judge.conf  /home/judge/etc
 chmod +x src/install/ans2out
 
+# judge.conf파일의 디폴트 값 : OJ_SHM_RUN=1
 if grep "OJ_SHM_RUN=0" etc/judge.conf ; then
 	mkdir run0 run1 run2 run3
 	chown www-data run0 run1 run2 run3
 fi
 
+#judge.conf 파일 내용 변경
 sed -i "s/OJ_USER_NAME=root/OJ_USER_NAME=$USER/g" etc/judge.conf
 sed -i "s/OJ_PASSWORD=root/OJ_PASSWORD=$PASSWORD/g" etc/judge.conf
 sed -i "s/OJ_COMPILE_CHROOT=1/OJ_COMPILE_CHROOT=0/g" etc/judge.conf
@@ -51,10 +57,21 @@ else
 	sed -i "s:include /etc/nginx/mime.types;:client_max_body_size    80m;\n\tinclude /etc/nginx/mime.types;:g" /etc/nginx/nginx.conf
 fi
 
+#mysql
+# -h. --host=name connect to host
+# -u, --user=name User for login if not current user.
+# -p password
+# jol 데이터베이스 생성(compileinfo, contest, contest_problem, loginlog, mail, news, privilege,
+# problem, reply, sim, solution, source_code, topic, users, online, runtimeinfo, custominput, printer, balloon)
+# simfilter trigger 생성 및 정의 (sim table에 insert 시 trigger)
 mysql -h localhost -u$USER -p$PASSWORD < src/install/db.sql
+
 echo "insert into jol.privilege values('admin','administrator','N');"|mysql -h localhost -u$USER -p$PASSWORD 
 
+# nginx의 DocumentRoot(웹서버의 최상위 폴더)를 /hmoe/judge/src/web 으로 변경
 sed -i "s:root /var/www/html;:root /home/judge/src/web;:g" /etc/nginx/sites-enabled/default
+
+# nginx의 default index file 변경
 sed -i "s:index index.html:index index.php:g" /etc/nginx/sites-enabled/default
 sed -i "s:#location ~ \\\.php\\$:location ~ \\\.php\\$:g" /etc/nginx/sites-enabled/default
 sed -i "s:#\tinclude snippets:\tinclude snippets:g" /etc/nginx/sites-enabled/default
@@ -71,9 +88,12 @@ sed -i "s/OJ_CPU_COMPENSATION=1.0/OJ_CPU_COMPENSATION=$COMPENSATION/g" etc/judge
 /etc/init.d/php7.0-fpm restart
 service php7.0-fpm restart
 
+# judge 부분 (분석 예정)
 cd src/core
 chmod +x ./make.sh
 ./make.sh
+
+# /etc/rc.local : 부팅시 자동 실행할 명령어 리스트
 if grep "/usr/bin/judged" /etc/rc.local ; then
 	echo "auto start judged added!"
 else
