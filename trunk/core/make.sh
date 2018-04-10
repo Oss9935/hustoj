@@ -1,12 +1,18 @@
 #!/bin/bash
+
+# build judged
 cd judged
 make
 chmod +x judged
 cp judged /usr/bin
+
+# build judge_client
 cd ../judge_client
 make
 chmod +x judge_client
 cp judge_client /usr/bin
+
+# build sim executables in MSDOS
 cd ../sim/sim_3_01
 make fresh
 make exes
@@ -18,6 +24,8 @@ cp sim_pasc.exe /usr/bin/sim_pas
 cp sim_text.exe /usr/bin/sim_text
 cp sim_lisp.exe /usr/bin/sim_scm
 cd ..
+
+
 cp sim.sh /usr/bin
 chmod +x /usr/bin/sim.sh
 rm /usr/bin/sim_rb /usr/bin/sim_sh
