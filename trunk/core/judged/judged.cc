@@ -38,7 +38,7 @@
 #define BUFFER_SIZE 1024
 #define LOCKFILE "/var/run/judged.pid"
 #define LOCKMODE (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)
-#define STD_MB 1048576
+#define STD_MB 1048576LL
 
 #define OJ_WT0 0
 #define OJ_WT1 1
@@ -197,7 +197,7 @@ void init_mysql_conf() {
 #ifdef _mysql_h
 		sprintf(query,
 				"SELECT solution_id FROM solution WHERE language in (%s) and result<2 and MOD(solution_id,%d)=%d ORDER BY result ASC,solution_id ASC limit %d",
-				oj_lang_set, oj_tot, oj_mod, max_running * 2);
+				oj_lang_set, oj_tot, oj_mod, 2 *max_running );
 #endif
 		sleep_tmp = sleep_time;
 		//	fclose(fp);
@@ -214,9 +214,13 @@ void run_client(int runid, int clientid) {
 	LIM.rlim_max = 180 * STD_MB;
 	LIM.rlim_cur = 180 * STD_MB;
 	setrlimit(RLIMIT_FSIZE, &LIM);
-
+#ifdef __i386
 	LIM.rlim_max = STD_MB << 11;
 	LIM.rlim_cur = STD_MB << 11;
+#else
+	LIM.rlim_max = STD_MB << 15;
+	LIM.rlim_cur = STD_MB << 15;
+#endif
 	setrlimit(RLIMIT_AS, &LIM);
 
 	LIM.rlim_cur = LIM.rlim_max = 400;
@@ -230,12 +234,12 @@ void run_client(int runid, int clientid) {
 	//sprintf(err,"%s/run%d/error.out",oj_home,clientid);
 	//freopen(err,"a+",stderr);
 
-	if (!DEBUG)
+	//if (!DEBUG)
 		execl("/usr/bin/judge_client", "/usr/bin/judge_client", runidstr, buf,
 				oj_home, (char *) NULL);
-	else
-		execl("/usr/bin/judge_client", "/usr/bin/judge_client", runidstr, buf,
-				oj_home, "debug", (char *) NULL);
+	//else
+	//	execl("/usr/bin/judge_client", "/usr/bin/judge_client", runidstr, buf,
+	//			oj_home, "debug", (char *) NULL);
 
 	//exit(0);
 }
@@ -268,10 +272,10 @@ int init_mysql() {
 			sleep(2);
 			return 1;
 		} else {
-			return 0;
+			return executesql("set names utf8");
 		}
 	} else {
-		return executesql("set names utf8");
+			return executesql("commit");
 	}
 }
 #endif
@@ -444,7 +448,7 @@ bool check_out(int solution_id, int result) {
 }
 int work() {
 //      char buf[1024];
-	static int retcnt = 0;
+	int retcnt = 0;
 	int i = 0;
 	static pid_t ID[100];
 	static int workcnt = 0;
@@ -455,6 +459,8 @@ int work() {
 	//for(i=0;i<max_running;i++){
 	//      ID[i]=0;
 	//}
+	for(i=0;i<max_running *2 +1 ;i++)
+		jobs[i]=0;
 
 	//sleep_time=sleep_tmp;
 	/* get the database info */
@@ -466,10 +472,9 @@ int work() {
 		runid = jobs[j];
 		if (runid % oj_tot != oj_mod)
 			continue;
-		if (DEBUG)
-			write_log("Judging solution %d", runid);
 		if (workcnt >= max_running) {           // if no more client can running
-			tmp_pid = waitpid(-1, NULL, 0);     // wait 4 one child exit
+			tmp_pid = waitpid(-1, NULL, WNOHANG);     // wait 4 one child exit
+			if (DEBUG) printf("try get one tmp_pid=%d\n",tmp_pid);
 			for (i = 0; i < max_running; i++){     // get the client id
 				if (ID[i] == tmp_pid){
 					workcnt--;
@@ -489,18 +494,29 @@ int work() {
 				workcnt++;
 				ID[i] = fork();                                   // start to fork
 				if (ID[i] == 0) {
-					if (DEBUG)
+					if (DEBUG){
+						write_log("Judging solution %d", runid);
 						write_log("<<=sid=%d===clientid=%d==>>\n", runid, i);
+					}
 					run_client(runid, i);    // if the process is the son, run it
 					exit(0);
 				}
 
 			} else {
-				ID[i] = 0;
+			//	ID[i] = 0;
+				if(DEBUG){
+					if(workcnt<max_running)
+						printf("check out failure ! runid:%d pid:%d \n",i,ID[i]);
+					else
+						printf("workcnt:%d max_running:%d ! \n",workcnt,max_running);
+						
+				}
 			}
 		}
+		if(DEBUG)
+			  printf("workcnt:%d max_running:%d ! \n",workcnt,max_running);
 	}
-	while ((tmp_pid = waitpid(-1, NULL, 0)) > 0) {
+	while ((tmp_pid = waitpid(-1, NULL,WNOHANG)) > 0) {
 		for (i = 0; i < max_running; i++){     // get the client id
 			if (ID[i] == tmp_pid){
 			
@@ -654,6 +670,7 @@ int main(int argc, char** argv) {
 		}
 		turbo_mode2();
 		if(ONCE) break;
+		if(DEBUG) printf("sleeping ... %ds \n",sleep_time);
 		sleep(sleep_time);
 		j = 1;
 	}
