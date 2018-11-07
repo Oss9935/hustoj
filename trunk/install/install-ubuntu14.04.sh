@@ -3,7 +3,7 @@ apt-get update
 apt-get install -y subversion
 /usr/sbin/useradd -m -u 1536 judge
 cd /home/judge/
-svn co https://github.com/zhblue/hustoj/trunk/trunk/ src
+svn co https://github.com/Oss9935/hustoj/trunk/trunk src
 
 echo 'mysql-server-5.5 mysql-server/root_password password ""' | sudo debconf-set-selections
 echo 'mysql-server-5.5 mysql-server/root_password_again password ""' | sudo debconf-set-selections
